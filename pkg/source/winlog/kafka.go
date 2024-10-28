@@ -60,10 +60,13 @@ func (k *Source) Stop() {
 }
 
 func (k *Source) ProductLoop(productFunc api.ProductFunc) {
-	return
+	e := k.eventPool.Get()
+	header := e.Header()
+	meta := e.Meta()
+	e.Fill(meta, header, nil)
+	productFunc(e)
 }
 
 func (k *Source) Commit(events []api.Event) {
-	// commit when sink ack
 	k.eventPool.PutAll(events)
 }
