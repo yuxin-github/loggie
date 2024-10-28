@@ -1,10 +1,7 @@
 package winlog
 
 import (
-	"regexp"
 	"time"
-
-	"github.com/pkg/errors"
 
 	kafkaSink "github.com/loggie-io/loggie/pkg/sink/kafka"
 )
@@ -28,37 +25,4 @@ type Config struct {
 	AutoOffsetReset    string         `yaml:"autoOffsetReset" default:"latest" validate:"oneof=earliest latest"`
 	SASL               kafkaSink.SASL `yaml:"sasl,omitempty"`
 	AddonMeta          *bool          `yaml:"addonMeta,omitempty" default:"true"`
-}
-
-func (c *Config) SetDefaults() {
-	if c.SASL.UserName != "" {
-		c.SASL.Username = c.SASL.UserName
-	}
-}
-
-func (c *Config) Validate() error {
-	if c.Topic == "" && len(c.Topics) == 0 {
-		return errors.New("topic or topics is required")
-	}
-
-	if c.Topic != "" {
-		_, err := regexp.Compile(c.Topic)
-		if err != nil {
-			return errors.WithMessagef(err, "compile kafka topic regex %s error", c.Topic)
-		}
-	}
-	if len(c.Topics) > 0 {
-		for _, t := range c.Topics {
-			_, err := regexp.Compile(t)
-			if err != nil {
-				return errors.WithMessagef(err, "compile kafka topic regex %s error", t)
-			}
-		}
-	}
-
-	if err := c.SASL.Validate(); err != nil {
-		return err
-	}
-
-	return nil
 }
